@@ -1,0 +1,47 @@
+server:
+  tomcat:
+    threads:
+      max: 15
+
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+
+resilience4j.circuitbreaker:
+  instances:
+    orderService:
+      registerHealthIndicator: true
+      eventConsumerBufferSize: 10
+      failureRateThreshold: 50 # once the 50% requests failed state will be open
+      minimumNumberOfCalls: 5
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+      waitDurationInOpenState: 5s
+      permittedNumberOfCallsInHalfOpenState: 3
+      slidingWindowSize: 10  #
+      slidingWindowType: COUNT_BASED
+
+resilience4j.retry:
+  instances:
+    orderService:
+      maxRetryAttempts: 5
+      waitDuration: 10s
+
+resilience4j.timelimiter:
+  instances:
+    orderService:
+      timeoutDuration: 3s
+      cancelRunningFuture: true #whether cancel should be called on the running future
+
+resilience4j.bulkhead:
+  instances:
+    orderService:
+      maxWaitDuration: 3000 #any additional requests will wait for the given duration. Otherwise it will go with default/fallback method.
+      maxConcurrentCalls: 3 #max number of concurrent calls allowed to product service
