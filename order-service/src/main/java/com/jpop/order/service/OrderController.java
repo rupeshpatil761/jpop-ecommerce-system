@@ -61,7 +61,7 @@ public class OrderController {
     public ResponseEntity<Object> getProductDetailsRetry() {
         System.out.println("Inside order controller - calling getProductDetailsRetry");
         RestTemplate rt = new RestTemplate();
-        System.out.println("Previous attempt Count: "+attempt);
+        System.out.println("Previous attempt Count: " + attempt);
         System.out.println("Inside getProductDetailsRetry - retry attempt: " + attempt++ + " time: " + new Date());
         List<Product> response = rt.exchange("http://localhost:8083/product",
                 HttpMethod.GET, null, new ParameterizedTypeReference<List<Product>>() {
@@ -70,7 +70,7 @@ public class OrderController {
     }
 
     @GetMapping("/ratelimiter")
-    @RateLimiter(name=ORDER_SERVICE_CONFIG, fallbackMethod = "getAvailableProducts")
+    @RateLimiter(name = ORDER_SERVICE_CONFIG, fallbackMethod = "getAvailableProducts")
     public ResponseEntity<Object> getProductDetailsRateLimiter() throws InterruptedException {
         System.out.println("Inside order controller - calling getProductDetailsRateLimiter");
         RestTemplate rt = new RestTemplate();
@@ -82,17 +82,17 @@ public class OrderController {
     }
 
     @GetMapping("/timelimiter")
-    @TimeLimiter(name=ORDER_SERVICE_CONFIG, fallbackMethod = "getAvailableProductsTimeout")
+    @TimeLimiter(name = ORDER_SERVICE_CONFIG, fallbackMethod = "getAvailableProductsTimeout")
     public CompletableFuture<String> getProductDetailsTimeLimiter() {
         System.out.println("Inside getProductDetailsTimeLimiter");
         final int arg = 8;
         CompletableFuture<String> f = CompletableFuture.supplyAsync(() -> {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
-                return arg+"";
+                return arg + "";
             }
-            return ""+arg + 10;
+            return (arg + 10) + "";
         });
         return f;
     }
@@ -101,26 +101,17 @@ public class OrderController {
     @Bulkhead(name = ORDER_SERVICE_CONFIG, fallbackMethod = "bulkHeadFallback")
     public ResponseEntity<Object> getProductDetailsBulkHead() throws InterruptedException {
         System.out.println("Inside OrderController.getProductDetailsBulkHead");
+        Thread.sleep(5000);
         String response = new RestTemplate().getForObject("http://localhost:8083/product", String.class);
         return new ResponseEntity<Object>("Bulk Head Success for concurrent calls", HttpStatus.OK);
     }
 
     public ResponseEntity<Object> bulkHeadFallback(Exception t) {
-        if(t instanceof ResourceAccessException) {
+        if (t instanceof ResourceAccessException) {
             return new ResponseEntity<Object>(" Product Service is not running", HttpStatus.GATEWAY_TIMEOUT);
         } else {
             return new ResponseEntity<Object>(" orderService is full and does not permit further calls", HttpStatus.TOO_MANY_REQUESTS);
         }
-    }
-
-    @GetMapping("/product-url")
-    public ResponseEntity<Object> getProductDetailsWithHardCodedUrl() {
-        System.out.println("Inside order controller - calling getProductDetailsWithHardCodedUrl");
-        RestTemplate rt = new RestTemplate();
-        List<Product> response = rt.exchange("http://localhost:8083/product",
-                HttpMethod.GET, null, new ParameterizedTypeReference<List<Product>>() {
-                }).getBody();
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/product-feign")
@@ -135,16 +126,13 @@ public class OrderController {
      */
     private ResponseEntity<Object> getAvailableProducts(RuntimeException e) {
         System.out.println("Inside order controller - returning fallback getAvailableProducts");
-        if (e instanceof ResourceAccessException){
-            return new ResponseEntity<>("Product Service Not Running", HttpStatus.OK);
-        } else {
-            List<Product> list = new ArrayList<>();
-            list.add(new Product(1, "Dummy Product 1"));
-            list.add(new Product(2, "Dummy Product 2"));
-            list.add(new Product(3, "Dummy Product 3"));
-            return new ResponseEntity<>(list, HttpStatus.OK);
-        }
+        List<Product> list = new ArrayList<>();
+        list.add(new Product(1, "Dummy Product 1"));
+        list.add(new Product(2, "Dummy Product 2"));
+        list.add(new Product(3, "Dummy Product 3"));
+        return new ResponseEntity<>(list, HttpStatus.OK);
     }
+
     /**
      * Fallback Method
      */
@@ -153,6 +141,16 @@ public class OrderController {
         return CompletableFuture.supplyAsync(() -> {
             return "TimeLimiter 'orderService' recorded a timeout exception";
         });
+    }
+
+    @GetMapping("/product-url")
+    public ResponseEntity<Object> getProductDetailsWithHardCodedUrl() {
+        System.out.println("Inside order controller - calling getProductDetailsWithHardCodedUrl");
+        RestTemplate rt = new RestTemplate();
+        List<Product> response = rt.exchange("http://localhost:8083/product",
+                HttpMethod.GET, null, new ParameterizedTypeReference<List<Product>>() {
+                }).getBody();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**

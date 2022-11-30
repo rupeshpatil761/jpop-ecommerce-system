@@ -23,6 +23,9 @@ resilience4j.circuitbreaker:
       slidingWindowSize: 10  #Configures the size of the sliding window which is used to record the outcome of calls when the CircuitBreaker is closed.
       slidingWindowType: COUNT_BASED
 
+
+
+
 resilience4j.retry:
   instances:
     orderService:
