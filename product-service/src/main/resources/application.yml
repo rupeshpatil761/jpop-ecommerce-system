@@ -1,12 +1,1 @@
-resilience4j.ratelimiter:
-  instances:
-    productService:
-      limitForPeriod: 3
-      limitRefreshPeriod: 10s
-      timeoutDuration: 0s
 
-resilience4j.bulkhead:
-  instances:
-    productService:
-      maxWaitDuration: 3000 #any additional requests will wait for the given duration. Otherwise it will go with default/fallback method.
-      maxConcurrentCalls: 3 #max number of concurrent calls allowed to rating-service.

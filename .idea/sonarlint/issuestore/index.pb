@@ -37,3 +37,8 @@ G
 Qorder-service/src/main/java/com/jpop/order/service/LoadBalancerConfiguration.java,f\3\f311ac0e0149d39102813029b109c602f1b8e6e5
 |
 Lorder-service/src/main/java/com/jpop/order/service/MyFeignConfiguration.java,6\e\6ea4bc90be656bf90f3adf74e95d4a3b6f6c1bd3
+9
+	README.md,8\e\8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d
+:
+
+.gitignore,a\5\a5cc2925ca8258af241be7e5b0381edf30266302
