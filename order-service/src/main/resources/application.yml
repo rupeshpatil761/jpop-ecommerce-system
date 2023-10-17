@@ -1,0 +1,49 @@
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+
+resilience4j.circuitbreaker:
+  instances:
+    orderService:
+      registerHealthIndicator: true
+      eventConsumerBufferSize: 10
+      failureRateThreshold: 50 # once the 50% requests failed state will be open
+      minimumNumberOfCalls: 5
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+      waitDurationInOpenState: 5s
+      permittedNumberOfCallsInHalfOpenState: 3
+      slidingWindowSize: 10  #Configures the size of the sliding window which is used to record the outcome of calls when the CircuitBreaker is closed.
+      slidingWindowType: COUNT_BASED
+
+resilience4j.retry:
+  instances:
+    orderService:
+      maxRetryAttempts: 3 #The maximum number of attempts (including the initial call as the first attempt)
+      waitDuration: 10s #A fixed wait duration between retry attempts
+
+resilience4j.ratelimiter:
+  instances:
+    orderService:
+      limitForPeriod: 1 #The number of permissions available during one limit refresh period
+      limitRefreshPeriod: 1s #After each period the rate limiter sets its permissions count back to the limitForPeriod value
+      timeoutDuration: 1s #The default wait time a thread waits for a permission
+
+resilience4j.timelimiter:
+  instances:
+    orderService:
+      timeoutDuration: 2s
+      cancelRunningFuture: true #whether cancel should be called on the running future
+
+resilience4j.bulkhead:
+  instances:
+    orderService:
+      maxWaitDuration: 6000 #any additional requests will wait for the given duration. Otherwise it will go with default/fallback method.
+      maxConcurrentCalls: 3 #max number of concurrent calls allowed to order service
